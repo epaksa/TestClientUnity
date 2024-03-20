@@ -1,11 +1,4 @@
-﻿using Assets.Scripts.Common.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Assets.Scripts.Game
+﻿namespace Assets.Scripts.Game
 {
     public enum FakeInputType : int
     {

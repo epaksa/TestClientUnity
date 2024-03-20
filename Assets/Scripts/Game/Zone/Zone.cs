@@ -3,18 +3,10 @@ using Assets.Scripts.Game.Object;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using UnityEngine.EventSystems;
 using UnityEngine;
 using Random = System.Random;
-using System.IO;
-using Assets.Scripts.Common.Network;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
-using System.Drawing;
 using Color = UnityEngine.Color;
-using UnityEditor.PackageManager;
 
 namespace Assets.Scripts.Game.Zone
 {
