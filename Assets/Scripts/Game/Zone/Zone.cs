@@ -118,12 +118,20 @@ namespace Assets.Scripts.Game.Zone
                         continue;
                     }
 
-                    long now = new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds();
+                    long now = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
 
                     if (input._time_to_execute <= now)
                     {
-                        HandleFakeInput(input);
-                        FakeInputContainer.RemoveInput();
+                        bool finished = HandleFakeInput(input);
+
+                        if (finished)
+                        {
+                            FakeInputContainer.RemoveInput();
+                        }
+                        else
+                        {
+                            input._time_to_execute += 5000; // 5초후 다시 시도
+                        }
                     }
                 }
             });
@@ -195,7 +203,7 @@ namespace Assets.Scripts.Game.Zone
 
                     if (false == FakeInputContainer.Exist())
                     {
-                        long time_to_execute = new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds() + _random.Next(1, 4); // 1 ~ 3초 추가
+                        long time_to_execute = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() + _random.Next(1000, 3001); // 1 ~ 3초 추가
                         FakeInput input = new FakeInput(FakeInputType.move, time_to_execute); // move할지 attack(아직 미구현)할지 random으로 나중에 돌리기
 
                         Debug.Log($"fake input => type : {input._type}, time : {input._time_to_execute}");
@@ -218,7 +226,7 @@ namespace Assets.Scripts.Game.Zone
                     {
                         if (false == FakeInputContainer.Exist())
                         {
-                            long time_to_execute = new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds() + _random.Next(1, 4); // 1 ~ 3초 추가
+                            long time_to_execute = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() + _random.Next(1000, 3001); // 1 ~ 3초 추가
                             FakeInput input = new FakeInput(FakeInputType.move, time_to_execute); // move할지 attack(아직 미구현)할지 random으로 나중에 돌리기
 
                             Debug.Log($"fake input => type : {input._type}, time : {input._time_to_execute}");
@@ -310,12 +318,14 @@ namespace Assets.Scripts.Game.Zone
             Debug.Log($"sc_logout => id : {client_id}");
         }
 
-        private void HandleFakeInput(FakeInput input)
+        private bool HandleFakeInput(FakeInput input)
         {
+            bool result = true;
+
             switch (input._type)
             {
                 case FakeInputType.move:
-                    ProcessFakeInputMove();
+                    result = ProcessFakeInputMove(0);
                     break;
                 case FakeInputType.attack:
                     break;
@@ -324,10 +334,17 @@ namespace Assets.Scripts.Game.Zone
                 default:
                     break;
             }
+
+            return result;
         }
 
-        private void ProcessFakeInputMove()
+        private bool ProcessFakeInputMove(int checked_count)
         {
+            if (10 == checked_count) // 주위에 player들에게 둘러쌓이면, call stack overflow나서 check count 추가.
+            {
+                return false;
+            }
+
             Pos pos;
             if (_object_info.TryGetValue(GameManager.CLIENT._id, out pos))
             {
@@ -339,8 +356,7 @@ namespace Assets.Scripts.Game.Zone
 
                 if ((next_pos_delta_x == 0 && next_pos_delta_y == 0) || (false == CheckTile(next_pos_x, next_pos_y)))
                 {
-                    ProcessFakeInputMove();
-                    return;
+                    return ProcessFakeInputMove(checked_count+1);
                 }
 
                 cs_move packet = new cs_move();
@@ -350,7 +366,11 @@ namespace Assets.Scripts.Game.Zone
                 Debug.Log($"cs_move => x : {packet._x}, y : {packet._y}");
 
                 GameManager.CLIENT.Send(packet);
+
+                return true;
             }
+
+            return false;
         }
 
         private bool GetCurrentPos(out int out_x, out int out_y, int object_id)
