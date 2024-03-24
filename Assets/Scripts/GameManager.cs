@@ -10,8 +10,8 @@ public class GameManager : MonoBehaviour
     public static readonly string SERVER_IP = "localhost";
     public static readonly int SERVER_PORT = 19001;
 
-    public static readonly int SEND_BUFFER_SIZE = 1024;
-    public static readonly int READ_BUFFER_SIZE = 1024;
+    public static readonly int SEND_BUFFER_SIZE = 10240;
+    public static readonly int READ_BUFFER_SIZE = 10240;
 
     public static readonly string MAP_FILE_NAME = "map.csv";
     
